@@ -28,7 +28,7 @@ export default function LoginPage() {
     <div className="login-bg">
       <div className="login-card">
         <div className="login-logo">
-          <img src="./New_Logo.png" alt="TaskFlow Logo" className="login-main-logo" />
+          <img src="./logo.png" alt="TaskFlow Logo" className="login-main-logo" />
         </div>
 
         <div className="role-tabs">
