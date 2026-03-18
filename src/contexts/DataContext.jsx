@@ -48,8 +48,8 @@ export function DataProvider({ children }) {
   useEffect(() => { localStorage.setItem('taskapp_services', JSON.stringify(services)); }, [services]);
   useEffect(() => { localStorage.setItem('taskapp_tasks', JSON.stringify(tasks)); }, [tasks]);
 
-  const addProject = (name, address) => {
-    const project = { id: uuidv4(), name, address };
+  const addProject = (name, serviceIds = []) => {
+    const project = { id: uuidv4(), name, serviceIds };
     setProjects((prev) => [...prev, project]);
     return project;
   };

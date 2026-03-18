@@ -21,7 +21,7 @@ export default function Header({ onSearch }) {
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedServiceIds, setSelectedServiceIds] = useState([]);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
-  
+
   const servicesRef = useRef(null);
 
   useEffect(() => {
@@ -45,11 +45,11 @@ export default function Header({ onSearch }) {
 
   const handleGo = () => {
     if (!selectedProjectId) return;
-    onSearch({ 
-      projectId: selectedProjectId, 
-      month: selectedMonth, 
+    onSearch({
+      projectId: selectedProjectId,
+      month: selectedMonth,
       year: selectedYear,
-      serviceIds: selectedServiceIds 
+      serviceIds: selectedServiceIds
     });
   };
 
@@ -77,11 +77,47 @@ export default function Header({ onSearch }) {
     <header className="app-header">
       <div className="header-left">
         <div className="header-logo">
-          <img src="/logo.png" alt="TaskFlow Logo" className="app-main-logo" />
+          <img src="./logo.png" alt="TaskFlow Logo" className="app-main-logo" />
         </div>
       </div>
 
       <div className="header-center">
+        <div className="header-control">
+          <label className="header-label">Services</label>
+          <div className="multi-select-container header-services-ms" ref={servicesRef}>
+            <div
+              className={`dropdown-trigger header-trigger ${isServicesOpen ? 'active' : ''}`}
+              onClick={() => setIsServicesOpen(!isServicesOpen)}
+            >
+              <span className="trigger-text">{getServiceText()}</span>
+              <span className="trigger-icon">▼</span>
+            </div>
+
+            {isServicesOpen && (
+              <div className="dropdown-menu header-dropdown-menu">
+                {services.length === 0 ? (
+                  <div className="no-emp-hint">No services added yet.</div>
+                ) : (
+                  services.map((s) => (
+                    <label
+                      key={s.id}
+                      className={`emp-checkbox-item ${selectedServiceIds.includes(s.id) ? 'checked' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedServiceIds.includes(s.id)}
+                        onChange={() => toggleService(s.id)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="emp-check-name">{s.name}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="header-control">
           <label className="header-label">Project</label>
           <select
@@ -120,42 +156,6 @@ export default function Header({ onSearch }) {
               <option key={y} value={y}>{y}</option>
             ))}
           </select>
-        </div>
-
-        <div className="header-control">
-          <label className="header-label">Services</label>
-          <div className="multi-select-container header-services-ms" ref={servicesRef}>
-            <div 
-              className={`dropdown-trigger header-trigger ${isServicesOpen ? 'active' : ''}`}
-              onClick={() => setIsServicesOpen(!isServicesOpen)}
-            >
-              <span className="trigger-text">{getServiceText()}</span>
-              <span className="trigger-icon">▼</span>
-            </div>
-
-            {isServicesOpen && (
-              <div className="dropdown-menu header-dropdown-menu">
-                {services.length === 0 ? (
-                  <div className="no-emp-hint">No services added yet.</div>
-                ) : (
-                  services.map((s) => (
-                    <label
-                      key={s.id}
-                      className={`emp-checkbox-item ${selectedServiceIds.includes(s.id) ? 'checked' : ''}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedServiceIds.includes(s.id)}
-                        onChange={() => toggleService(s.id)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <span className="emp-check-name">{s.name}</span>
-                    </label>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
         </div>
 
         <button

@@ -1456,6 +1456,59 @@ label {
   grid-template-columns: 50px 1.5fr 1fr 100px;
 }
 
+/* ===== ROW-BASED CALENDAR TASKS ===== */
+.day-tasks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.day-task-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid transparent;
+}
+
+.day-task-entry:hover {
+  background: #fff;
+  border-color: var(--accent);
+  transform: translateX(2px);
+}
+
+.day-task-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  margin-right: 4px;
+}
+
+.inline-status-dot {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+}
+
+/* Focused task in popup */
+.task-entry-item.task-focused {
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+  transform: scale(1.02);
+  z-index: 10;
+}
+
+
 /* ===== RESPONSIVE ===== */
 
 @media (max-width: 768px) {
@@ -1708,4 +1761,108 @@ label {
   .status-options-compact {
     grid-template-columns: repeat(4, 1fr);
   }
+}
+
+/* ===== SERVICES TAG SELECTOR (Admin Panel) ===== */
+.services-tag-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.service-tag-btn {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.service-tag-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg3);
+}
+
+.service-tag-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.service-tag-btn.sm {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+}
+
+/* ===== GRADIENT TAGS (Project List) ===== */
+.project-services-cell {
+  flex: 2;
+  min-width: 150px;
+}
+
+.gradient-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.gradient-tag {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.7rem;
+  border-radius: 99px;
+  box-shadow: 0 2px 6px var(--accent-glow);
+  white-space: nowrap;
+}
+
+.edit-mode.services-tag-selector {
+  margin-top: 0.5rem;
+  justify-content: flex-start;
+}
+
+.selected-tags-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+}
+
+.dropdown-trigger.searchable {
+  padding: 0 0.85rem;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-search-input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 0.875rem !important;
+  color: var(--text) !important;
+  flex: 1;
+  height: 100%;
+}
+
+.dropdown-search-input::placeholder {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.dropdown-search-input.sm {
+  font-size: 0.75rem !important;
 }

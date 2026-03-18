@@ -13,6 +13,7 @@ const MONTHS = [
 export default function Calendar({ projectId, month, year, serviceIds = [] }) {
   const { projects, getTasks } = useData();
   const [selectedDate, setSelectedDate] = useState(null);
+  const [activeTaskId, setActiveTaskId] = useState(null);
 
   const project = projects.find((p) => p.id === projectId);
   const firstDay = new Date(year, month, 1);
@@ -94,17 +95,20 @@ export default function Calendar({ projectId, month, year, serviceIds = [] }) {
                   <span className="day-num">{day}</span>
                   <div className="day-tasks-container">
                     {dayTasks.map((t, tidx) => (
-                      <div key={t.id || tidx} className="day-task-entry">
-                        <span className="day-task-title">{t.title}</span>
-                        {isMultiTask && (
-                          <span className={`day-status-dot status-dot-${t.status} inline-status-dot`}></span>
-                        )}
+                      <div
+                        key={t.id || tidx}
+                        className="day-task-entry"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDate(getDateStr(day));
+                          setActiveTaskId(t.id);
+                        }}
+                      >
+                        <span className="day-task-title" title={t.title}>{t.title}</span>
+                        <span className={`day-status-dot status-dot-${t.status} inline-status-dot`}></span>
                       </div>
                     ))}
                   </div>
-                  {!isMultiTask && overallStatus && (
-                    <span className={`day-status-dot status-dot-${overallStatus} global-status-dot`}></span>
-                  )}
                 </>
               )}
             </div>
@@ -117,7 +121,11 @@ export default function Calendar({ projectId, month, year, serviceIds = [] }) {
           projectId={projectId}
           dateStr={selectedDate}
           headerServiceIds={serviceIds}
-          onClose={() => setSelectedDate(null)}
+          activeTaskId={activeTaskId}
+          onClose={() => {
+            setSelectedDate(null);
+            setActiveTaskId(null);
+          }}
         />
       )}
     </div>

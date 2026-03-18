@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
-import { FiArrowLeft, FiPlus, FiTrash2, FiBriefcase, FiUsers, FiLayers, FiEdit2 } from 'react-icons/fi';
+import { FiArrowLeft, FiPlus, FiTrash2, FiBriefcase, FiUsers, FiLayers, FiEdit2, FiChevronDown } from 'react-icons/fi';
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('projects');
@@ -15,11 +15,31 @@ export default function AdminPanel() {
 
   // Project form state
   const [projectName, setProjectName] = useState('');
-  const [projectAddress, setProjectAddress] = useState('');
+  const [projectServiceIds, setProjectServiceIds] = useState([]);
+  const [servicesSearchTerm, setServicesSearchTerm] = useState('');
   const [projectMsg, setProjectMsg] = useState('');
+  const [isProjectServicesOpen, setIsProjectServicesOpen] = useState(false);
 
   const [editingProjectId, setEditingProjectId] = useState(null);
-  const [editFormData, setEditFormData] = useState({ name: '', address: '' });
+  const [editFormData, setEditFormData] = useState({ name: '', serviceIds: [] });
+  const [editServicesSearchTerm, setEditServicesSearchTerm] = useState('');
+  const [isEditProjectServicesOpen, setIsEditProjectServicesOpen] = useState(false);
+
+  const addServicesRef = useRef(null);
+  const editServicesRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (addServicesRef.current && !addServicesRef.current.contains(event.target)) {
+        setIsProjectServicesOpen(false);
+      }
+      if (editServicesRef.current && !editServicesRef.current.contains(event.target)) {
+        setIsEditProjectServicesOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Employee form state
   const [empName, setEmpName] = useState('');
@@ -42,11 +62,34 @@ export default function AdminPanel() {
   const handleAddProject = (e) => {
     e.preventDefault();
     if (!projectName.trim()) return;
-    addProject(projectName.trim(), projectAddress.trim());
+    if (projectServiceIds.length === 0) {
+      setProjectMsg('❌ Please select at least one service!');
+      setTimeout(() => setProjectMsg(''), 3000);
+      return;
+    }
+    addProject(projectName.trim(), projectServiceIds);
     setProjectName('');
-    setProjectAddress('');
+    setProjectServiceIds([]);
     setProjectMsg('✅ Project added successfully!');
     setTimeout(() => setProjectMsg(''), 3000);
+  };
+
+  const toggleProjectService = (id) => {
+    setProjectServiceIds((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+    );
+    setServicesSearchTerm('');
+  };
+
+  const toggleEditProjectService = (id) => {
+    setEditFormData((prev) => {
+      const currentIds = prev.serviceIds || [];
+      const nextIds = currentIds.includes(id)
+        ? currentIds.filter((sid) => sid !== id)
+        : [...currentIds, id];
+      return { ...prev, serviceIds: nextIds };
+    });
+    setEditServicesSearchTerm('');
   };
 
   const handleAddEmployee = (e) => {
@@ -132,15 +175,65 @@ export default function AdminPanel() {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Address / Location</label>
-                    <input
-                      type="text"
-                      value={projectAddress}
-                      onChange={(e) => setProjectAddress(e.target.value)}
-                      placeholder="e.g. Remote / Mumbai"
-                    />
+                    <label>Services *</label>
+                    <div className="multi-select-container" ref={addServicesRef}>
+                      <div
+                        className={`dropdown-trigger searchable ${isProjectServicesOpen ? 'active' : ''}`}
+                        onClick={() => setIsProjectServicesOpen(true)}
+                        style={{ background: 'var(--bg)' }}
+                      >
+                        <input
+                          type="text"
+                          className="dropdown-search-input"
+                          placeholder={projectServiceIds.length === 0 ? "Type to search services..." : `${projectServiceIds.length} Selected`}
+                          value={servicesSearchTerm}
+                          onChange={(e) => {
+                            setServicesSearchTerm(e.target.value);
+                            setIsProjectServicesOpen(true);
+                          }}
+                          onFocus={() => setIsProjectServicesOpen(true)}
+                        />
+                        <FiChevronDown className="trigger-icon" />
+                      </div>
+
+                      {isProjectServicesOpen && (
+                        <div className="dropdown-menu">
+                          {services.length === 0 ? (
+                            <div className="no-emp-hint">No services added yet.</div>
+                          ) : (
+                            services
+                              .filter(s => s.name.toLowerCase().includes(servicesSearchTerm.toLowerCase()))
+                              .map((s) => (
+                                <label
+                                  key={s.id}
+                                  className={`emp-checkbox-item ${projectServiceIds.includes(s.id) ? 'checked' : ''}`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={projectServiceIds.includes(s.id)}
+                                    onChange={() => toggleProjectService(s.id)}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  <span className="emp-check-name">{s.name}</span>
+                                </label>
+                              ))
+                          )}
+                          {services.length > 0 && services.filter(s => s.name.toLowerCase().includes(servicesSearchTerm.toLowerCase())).length === 0 && (
+                            <div className="no-emp-hint">No matching services found.</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
+                {projectServiceIds.length > 0 && (
+                  <div className="selected-tags-preview">
+                    {projectServiceIds.map(id => {
+                      const s = services.find(srv => srv.id === id);
+                      return s ? <span key={id} className="gradient-tag sm">{s.name}</span> : null;
+                    })}
+                  </div>
+                )}
                 <div className="form-row">
                 </div>
                 {projectMsg && <div className="form-msg">{projectMsg}</div>}
@@ -159,17 +252,61 @@ export default function AdminPanel() {
                   <div className="list-header">
                     <span>#</span>
                     <span>Name</span>
-                    <span>Address</span>
+                    <span>Services</span>
                     <span>Action</span>
                   </div>
                   {projects.map((p, i) => (
                     editingProjectId === p.id ? (
                       <div className="list-row" key={p.id}>
                         <span>{i + 1}</span>
-                        <span><input type="text" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} style={{ width: '100%', padding: '0.3rem' }} /></span>
-                        <span><input type="text" value={editFormData.address} onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })} style={{ width: '100%', padding: '0.3rem' }} /></span>
+                        <span>
+                          <input type="text" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} style={{ width: '100%', padding: '0.3rem' }} />
+                        </span>
+                        <span>
+                          <div className="multi-select-container" ref={editServicesRef}>
+                            <div
+                              className={`dropdown-trigger searchable ${isEditProjectServicesOpen ? 'active' : ''}`}
+                              onClick={() => setIsEditProjectServicesOpen(true)}
+                              style={{ padding: '0.1rem 0.5rem', minHeight: '32px' }}
+                            >
+                              <input
+                                type="text"
+                                className="dropdown-search-input sm"
+                                placeholder={`${(editFormData.serviceIds || []).length} Selected`}
+                                value={editServicesSearchTerm}
+                                onChange={(e) => {
+                                  setEditServicesSearchTerm(e.target.value);
+                                  setIsEditProjectServicesOpen(true);
+                                }}
+                                onFocus={() => setIsEditProjectServicesOpen(true)}
+                                style={{ fontSize: '0.75rem' }}
+                              />
+                              <FiChevronDown className="trigger-icon" style={{ fontSize: '0.7rem' }} />
+                            </div>
+                            {isEditProjectServicesOpen && (
+                              <div className="dropdown-menu">
+                                {services
+                                  .filter(s => s.name.toLowerCase().includes(editServicesSearchTerm.toLowerCase()))
+                                  .map((s) => (
+                                    <label key={s.id} className={`emp-checkbox-item ${(editFormData.serviceIds || []).includes(s.id) ? 'checked' : ''}`}>
+                                      <input
+                                        type="checkbox"
+                                        checked={(editFormData.serviceIds || []).includes(s.id)}
+                                        onChange={() => toggleEditProjectService(s.id)}
+                                        onClick={(e) => e.stopPropagation()}
+                                      />
+                                      <span className="emp-check-name" style={{ fontSize: '0.75rem' }}>{s.name}</span>
+                                    </label>
+                                  ))}
+                                {services.filter(s => s.name.toLowerCase().includes(editServicesSearchTerm.toLowerCase())).length === 0 && (
+                                  <div className="no-emp-hint">No matches</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </span>
                         <span style={{ display: 'flex', gap: '0.4rem' }}>
-                          <button className="btn-add" style={{ padding: '0.3rem 0.6rem', margin: 0 }} onClick={() => { updateProject(p.id, editFormData); setEditingProjectId(null); }}>Save</button>
+                          <button className="btn-add" style={{ padding: '0.3rem 0.6rem', margin: 0 }} onClick={() => { if ((editFormData.serviceIds || []).length === 0) return alert('Select at least one service'); updateProject(p.id, editFormData); setEditingProjectId(null); }}>Save</button>
                           <button className="btn-delete" style={{ border: '1px solid var(--border)', color: 'var(--text)' }} onClick={() => setEditingProjectId(null)}>Cancel</button>
                         </span>
                       </div>
@@ -177,12 +314,21 @@ export default function AdminPanel() {
                       <div className="list-row" key={p.id}>
                         <span>{i + 1}</span>
                         <span className="list-name">{p.name}</span>
-                        <span>{p.address || '—'}</span>
+                        <span className="project-services-cell">
+                          {(p.serviceIds || []).length > 0 ? (
+                            <div className="gradient-tags-container">
+                              {p.serviceIds.map(sid => {
+                                const s = services.find(srv => srv.id === sid);
+                                return s ? <span key={sid} className="gradient-tag">{s.name}</span> : null;
+                              })}
+                            </div>
+                          ) : '—'}
+                        </span>
                         <span style={{ display: 'flex', gap: '0.4rem' }}>
                           <button
                             className="btn-back"
                             style={{ padding: '0.3rem 0.5rem', border: '1px solid var(--accent)', color: 'var(--accent)' }}
-                            onClick={() => { setEditingProjectId(p.id); setEditFormData({ name: p.name, address: p.address || '' }); }}
+                            onClick={() => { setEditingProjectId(p.id); setEditFormData({ name: p.name, serviceIds: p.serviceIds || [] }); }}
                             title="Edit Project"
                           >
                             Edit

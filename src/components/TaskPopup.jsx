@@ -16,7 +16,7 @@ const MONTHS_FULL = [
   'July','August','September','October','November','December'
 ];
 
-export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], onClose }) {
+export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], activeTaskId = null, onClose }) {
   const { projects, employees, services, saveTasks, getTasks, deleteTasks } = useData();
   const { currentUser } = useAuth();
 
@@ -113,26 +113,34 @@ export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], o
         </div>
 
         <div className="popup-body scrollable-body">
-          {taskList.map((task, idx) => (
-            <TaskEntry 
-              key={task.id || idx}
-              task={task}
-              index={idx}
-              employees={employees}
-              services={services}
-              updateField={(f, v) => updateTaskField(idx, f, v)}
-              onToggleEmp={(id) => toggleEmployee(idx, id)}
-              onToggleSrv={(id) => toggleService(idx, id)}
-              onRemove={() => removeTask(idx)}
-              headerServiceIds={headerServiceIds}
-              isLast={idx === taskList.length - 1}
-              showRemove={taskList.length > 1}
-            />
-          ))}
+          {taskList
+            .filter((task) => !activeTaskId || task.id === activeTaskId)
+            .map((task) => {
+              const originalIndex = taskList.findIndex(t => t.id === task.id);
+              return (
+                <TaskEntry 
+                  key={task.id || originalIndex}
+                  task={task}
+                  index={originalIndex}
+                  employees={employees}
+                  services={services}
+                  updateField={(f, v) => updateTaskField(originalIndex, f, v)}
+                  onToggleEmp={(id) => toggleEmployee(originalIndex, id)}
+                  onToggleSrv={(id) => toggleService(originalIndex, id)}
+                  onRemove={() => removeTask(originalIndex)}
+                  headerServiceIds={headerServiceIds}
+                  isLast={originalIndex === taskList.length - 1}
+                  showRemove={taskList.length > 1}
+                  isActive={activeTaskId === task.id}
+                />
+              );
+            })}
 
-          <button className="btn-add-another" onClick={addTask}>
-            + Add Another Task for this Day
-          </button>
+          {!activeTaskId && (
+            <button className="btn-add-another" onClick={addTask}>
+              + Add Another Task for this Day
+            </button>
+          )}
         </div>
 
         {msg && <div className="popup-msg">{msg}</div>}
@@ -152,12 +160,19 @@ export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], o
   );
 }
 
-function TaskEntry({ task, index, employees, services, updateField, onToggleEmp, onToggleSrv, onRemove, showRemove, headerServiceIds }) {
+function TaskEntry({ task, index, employees, services, updateField, onToggleEmp, onToggleSrv, onRemove, showRemove, headerServiceIds, isActive }) {
   const [isEmpOpen, setIsEmpOpen] = useState(false);
   const [isSrvOpen, setIsSrvOpen] = useState(false);
   
   const empRef = useRef(null);
   const srvRef = useRef(null);
+  const entryRef = useRef(null);
+
+  useEffect(() => {
+    if (isActive && entryRef.current) {
+      entryRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [isActive]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -202,7 +217,7 @@ function TaskEntry({ task, index, employees, services, updateField, onToggleEmp,
   };
 
   return (
-    <div className="task-entry-item">
+    <div className={`task-entry-item ${isActive ? 'task-focused' : ''}`} ref={entryRef}>
       <div className="task-entry-header">
         <span className="task-number">Task {index + 1}</span>
         {showRemove && (
