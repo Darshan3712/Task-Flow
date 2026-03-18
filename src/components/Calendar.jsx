@@ -75,45 +75,47 @@ export default function Calendar({ projectId, month, year, serviceIds = [] }) {
         </div>
       </div>
 
-      <div className="calendar-grid">
-        {DAY_NAMES.map((d) => (
-          <div key={d} className="cal-day-name">{d}</div>
-        ))}
-        {cells.map((day, idx) => {
-          const dayTasks = getDayTasks(day);
-          const isMultiTask = dayTasks.length >= 2;
-          const overallStatus = getOverallStatus(dayTasks);
+      <div className="calendar-overflow-container">
+        <div className="calendar-grid">
+          {DAY_NAMES.map((d) => (
+            <div key={d} className="cal-day-name">{d}</div>
+          ))}
+          {cells.map((day, idx) => {
+            const dayTasks = getDayTasks(day);
+            const isMultiTask = dayTasks.length >= 2;
+            const overallStatus = getOverallStatus(dayTasks);
 
-          return (
-            <div
-              key={idx}
-              className={`cal-cell ${!day ? 'cal-cell-empty' : 'cal-cell-active'} ${isToday(day) ? 'cal-today' : ''} ${(!isMultiTask && overallStatus) ? `cell-status-${overallStatus}` : ''}`}
-              onClick={() => day && setSelectedDate(getDateStr(day))}
-            >
-              {day && (
-                <>
-                  <span className="day-num">{day}</span>
-                  <div className="day-tasks-container">
-                    {dayTasks.map((t, tidx) => (
-                      <div
-                        key={t.id || tidx}
-                        className="day-task-entry"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedDate(getDateStr(day));
-                          setActiveTaskId(t.id);
-                        }}
-                      >
-                        <span className="day-task-title" title={t.title}>{t.title}</span>
-                        <span className={`day-status-dot status-dot-${t.status} inline-status-dot`}></span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={idx}
+                className={`cal-cell ${!day ? 'cal-cell-empty' : 'cal-cell-active'} ${isToday(day) ? 'cal-today' : ''} ${isMultiTask ? 'multi-task-cell' : ''} ${(!isMultiTask && overallStatus) ? `cell-status-${overallStatus}` : ''}`}
+                onClick={() => day && setSelectedDate(getDateStr(day))}
+              >
+                {day && (
+                  <>
+                    <span className="day-num">{day}</span>
+                    <div className="day-tasks-container">
+                      {dayTasks.map((t, tidx) => (
+                        <div
+                          key={t.id || tidx}
+                          className="day-task-entry"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedDate(getDateStr(day));
+                            setActiveTaskId(t.id);
+                          }}
+                        >
+                          <span className="day-task-title" title={t.title}>{t.title}</span>
+                          <span className={`day-status-dot status-dot-${t.status} inline-status-dot`}></span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {selectedDate && (

@@ -45,6 +45,7 @@ export default function AdminPanel() {
   const [empName, setEmpName] = useState('');
   const [empUsername, setEmpUsername] = useState('');
   const [empPassword, setEmpPassword] = useState('');
+  const [empDesignation, setEmpDesignation] = useState('');
   const [empMsg, setEmpMsg] = useState('');
 
   // Service form state
@@ -101,8 +102,9 @@ export default function AdminPanel() {
       setTimeout(() => setEmpMsg(''), 3000);
       return;
     }
-    addEmployee(empName.trim(), empUsername.trim(), empPassword.trim());
+    addEmployee(empName.trim(), empUsername.trim(), empPassword.trim(), empDesignation.trim());
     setEmpName('');
+    setEmpDesignation('');
     setEmpUsername('');
     setEmpPassword('');
     setEmpMsg('✅ Employee added successfully!');
@@ -248,102 +250,104 @@ export default function AdminPanel() {
               {projects.length === 0 ? (
                 <p className="empty-msg">No projects added yet.</p>
               ) : (
-                <div className="list-table project-list-table">
-                  <div className="list-header">
-                    <span>#</span>
-                    <span>Name</span>
-                    <span>Services</span>
-                    <span>Action</span>
-                  </div>
-                  {projects.map((p, i) => (
-                    editingProjectId === p.id ? (
-                      <div className="list-row" key={p.id}>
-                        <span>{i + 1}</span>
-                        <span>
-                          <input type="text" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} style={{ width: '100%', padding: '0.3rem' }} />
-                        </span>
-                        <span>
-                          <div className="multi-select-container" ref={editServicesRef}>
-                            <div
-                              className={`dropdown-trigger searchable ${isEditProjectServicesOpen ? 'active' : ''}`}
-                              onClick={() => setIsEditProjectServicesOpen(true)}
-                              style={{ padding: '0.1rem 0.5rem', minHeight: '32px' }}
-                            >
-                              <input
-                                type="text"
-                                className="dropdown-search-input sm"
-                                placeholder={`${(editFormData.serviceIds || []).length} Selected`}
-                                value={editServicesSearchTerm}
-                                onChange={(e) => {
-                                  setEditServicesSearchTerm(e.target.value);
-                                  setIsEditProjectServicesOpen(true);
-                                }}
-                                onFocus={() => setIsEditProjectServicesOpen(true)}
-                                style={{ fontSize: '0.75rem' }}
-                              />
-                              <FiChevronDown className="trigger-icon" style={{ fontSize: '0.7rem' }} />
-                            </div>
-                            {isEditProjectServicesOpen && (
-                              <div className="dropdown-menu">
-                                {services
-                                  .filter(s => s.name.toLowerCase().includes(editServicesSearchTerm.toLowerCase()))
-                                  .map((s) => (
-                                    <label key={s.id} className={`emp-checkbox-item ${(editFormData.serviceIds || []).includes(s.id) ? 'checked' : ''}`}>
-                                      <input
-                                        type="checkbox"
-                                        checked={(editFormData.serviceIds || []).includes(s.id)}
-                                        onChange={() => toggleEditProjectService(s.id)}
-                                        onClick={(e) => e.stopPropagation()}
-                                      />
-                                      <span className="emp-check-name" style={{ fontSize: '0.75rem' }}>{s.name}</span>
-                                    </label>
-                                  ))}
-                                {services.filter(s => s.name.toLowerCase().includes(editServicesSearchTerm.toLowerCase())).length === 0 && (
-                                  <div className="no-emp-hint">No matches</div>
-                                )}
+                <div className="admin-table-overflow-container">
+                  <div className="list-table project-list-table">
+                    <div className="list-header">
+                      <span>#</span>
+                      <span>Project Name</span>
+                      <span>Services</span>
+                      <span>Action</span>
+                    </div>
+                    {projects.map((p, i) => (
+                      editingProjectId === p.id ? (
+                        <div className="list-row" key={p.id}>
+                          <span>{i + 1}</span>
+                          <span>
+                            <input type="text" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} style={{ width: '100%', padding: '0.3rem' }} />
+                          </span>
+                          <span>
+                            <div className="multi-select-container" ref={editServicesRef}>
+                              <div
+                                className={`dropdown-trigger searchable ${isEditProjectServicesOpen ? 'active' : ''}`}
+                                onClick={() => setIsEditProjectServicesOpen(true)}
+                                style={{ padding: '0.1rem 0.5rem', minHeight: '32px' }}
+                              >
+                                <input
+                                  type="text"
+                                  className="dropdown-search-input sm"
+                                  placeholder={`${(editFormData.serviceIds || []).length} Selected`}
+                                  value={editServicesSearchTerm}
+                                  onChange={(e) => {
+                                    setEditServicesSearchTerm(e.target.value);
+                                    setIsEditProjectServicesOpen(true);
+                                  }}
+                                  onFocus={() => setIsEditProjectServicesOpen(true)}
+                                  style={{ fontSize: '0.75rem' }}
+                                />
+                                <FiChevronDown className="trigger-icon" style={{ fontSize: '0.7rem' }} />
                               </div>
-                            )}
-                          </div>
-                        </span>
-                        <span style={{ display: 'flex', gap: '0.4rem' }}>
-                          <button className="btn-add" style={{ padding: '0.3rem 0.6rem', margin: 0 }} onClick={() => { if ((editFormData.serviceIds || []).length === 0) return alert('Select at least one service'); updateProject(p.id, editFormData); setEditingProjectId(null); }}>Save</button>
-                          <button className="btn-delete" style={{ border: '1px solid var(--border)', color: 'var(--text)' }} onClick={() => setEditingProjectId(null)}>Cancel</button>
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="list-row" key={p.id}>
-                        <span>{i + 1}</span>
-                        <span className="list-name">{p.name}</span>
-                        <span className="project-services-cell">
-                          {(p.serviceIds || []).length > 0 ? (
-                            <div className="gradient-tags-container">
-                              {p.serviceIds.map(sid => {
-                                const s = services.find(srv => srv.id === sid);
-                                return s ? <span key={sid} className="gradient-tag">{s.name}</span> : null;
-                              })}
+                              {isEditProjectServicesOpen && (
+                                <div className="dropdown-menu">
+                                  {services
+                                    .filter(s => s.name.toLowerCase().includes(editServicesSearchTerm.toLowerCase()))
+                                    .map((s) => (
+                                      <label key={s.id} className={`emp-checkbox-item ${(editFormData.serviceIds || []).includes(s.id) ? 'checked' : ''}`}>
+                                        <input
+                                          type="checkbox"
+                                          checked={(editFormData.serviceIds || []).includes(s.id)}
+                                          onChange={() => toggleEditProjectService(s.id)}
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <span className="emp-check-name" style={{ fontSize: '0.75rem' }}>{s.name}</span>
+                                      </label>
+                                    ))}
+                                  {services.filter(s => s.name.toLowerCase().includes(editServicesSearchTerm.toLowerCase())).length === 0 && (
+                                    <div className="no-emp-hint">No matches</div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          ) : '—'}
-                        </span>
-                        <span style={{ display: 'flex', gap: '0.4rem' }}>
-                          <button
-                            className="btn-back"
-                            style={{ padding: '0.3rem 0.5rem', border: '1px solid var(--accent)', color: 'var(--accent)' }}
-                            onClick={() => { setEditingProjectId(p.id); setEditFormData({ name: p.name, serviceIds: p.serviceIds || [] }); }}
-                            title="Edit Project"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="btn-delete"
-                            onClick={() => deleteProject(p.id)}
-                            title="Delete Project"
-                          >
-                            <FiTrash2 />
-                          </button>
-                        </span>
-                      </div>
-                    )
-                  ))}
+                          </span>
+                          <span style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button className="btn-add" style={{ padding: '0.3rem 0.6rem', margin: 0 }} onClick={() => { if ((editFormData.serviceIds || []).length === 0) return alert('Select at least one service'); updateProject(p.id, editFormData); setEditingProjectId(null); }}>Save</button>
+                            <button className="btn-delete" style={{ border: '1px solid var(--border)', color: 'var(--text)' }} onClick={() => setEditingProjectId(null)}>Cancel</button>
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="list-row" key={p.id}>
+                          <span>{i + 1}</span>
+                          <span className="list-name">{p.name}</span>
+                          <span className="project-services-cell">
+                            {(p.serviceIds || []).length > 0 ? (
+                              <div className="gradient-tags-container">
+                                {p.serviceIds.map(sid => {
+                                  const s = services.find(srv => srv.id === sid);
+                                  return s ? <span key={sid} className="gradient-tag">{s.name}</span> : null;
+                                })}
+                              </div>
+                            ) : '—'}
+                          </span>
+                          <span style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button
+                              className="btn-back"
+                              style={{ padding: '0.3rem 0.5rem', border: '1px solid var(--accent)', color: 'var(--accent)' }}
+                              onClick={() => { setEditingProjectId(p.id); setEditFormData({ name: p.name, serviceIds: p.serviceIds || [] }); }}
+                              title="Edit Project"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn-delete"
+                              onClick={() => deleteProject(p.id)}
+                              title="Delete Project"
+                            >
+                              <FiTrash2 />
+                            </button>
+                          </span>
+                        </div>
+                      )
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -367,6 +371,17 @@ export default function AdminPanel() {
                     />
                   </div>
                   <div className="form-group">
+                    <label>Designation</label>
+                    <input
+                      type="text"
+                      value={empDesignation}
+                      onChange={(e) => setEmpDesignation(e.target.value)}
+                      placeholder="e.g. Senior Developer"
+                    />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
                     <label>Username *</label>
                     <input
                       type="text"
@@ -376,8 +391,6 @@ export default function AdminPanel() {
                       required
                     />
                   </div>
-                </div>
-                <div className="form-row">
                   <div className="form-group">
                     <label>Password *</label>
                     <input
@@ -401,31 +414,35 @@ export default function AdminPanel() {
               {employees.length === 0 ? (
                 <p className="empty-msg">No employees added yet.</p>
               ) : (
-                <div className="list-table">
-                  <div className="list-header">
-                    <span>#</span>
-                    <span>Name</span>
-                    <span>Username</span>
-                    <span>Password</span>
-                    <span>Action</span>
-                  </div>
-                  {employees.map((emp, i) => (
-                    <div className="list-row" key={emp.id}>
-                      <span>{i + 1}</span>
-                      <span className="list-name">{emp.name}</span>
-                      <span>{emp.username}</span>
-                      <span className="emp-password-cell">{emp.password}</span>
-                      <span>
-                        <button
-                          className="btn-delete"
-                          onClick={() => deleteEmployee(emp.id)}
-                          title="Delete Employee"
-                        >
-                          <FiTrash2 />
-                        </button>
-                      </span>
+                <div className="admin-table-overflow-container">
+                  <div className="list-table employee-list-table">
+                    <div className="list-header">
+                      <span>#</span>
+                      <span>Employee Name</span>
+                      <span>Designation</span>
+                      <span>Username</span>
+                      <span>Password</span>
+                      <span>Action</span>
                     </div>
-                  ))}
+                    {employees.map((emp, i) => (
+                      <div className="list-row" key={emp.id}>
+                        <span>{i + 1}</span>
+                        <span className="list-name">{emp.name}</span>
+                        <span>{emp.designation || '-'}</span>
+                        <span>{emp.username}</span>
+                        <span className="emp-password-cell">{emp.password}</span>
+                        <span>
+                          <button
+                            className="btn-delete"
+                            onClick={() => deleteEmployee(emp.id)}
+                            title="Delete Employee"
+                          >
+                            <FiTrash2 />
+                          </button>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -470,49 +487,51 @@ export default function AdminPanel() {
               {services.length === 0 ? (
                 <p className="empty-msg">No services added yet.</p>
               ) : (
-                <div className="list-table">
-                  <div className="list-header">
-                    <span>#</span>
-                    <span>Name</span>
-                    <span>Description</span>
-                    <span>Action</span>
+                <div className="admin-table-overflow-container">
+                  <div className="list-table">
+                    <div className="list-header">
+                      <span>#</span>
+                      <span>Service Name</span>
+                      <span>Description</span>
+                      <span>Action</span>
+                    </div>
+                    {services.map((s, i) => (
+                      editingServiceId === s.id ? (
+                        <div className="list-row" key={s.id}>
+                          <span>{i + 1}</span>
+                          <span><input type="text" value={serviceEditData.name} onChange={(e) => setServiceEditData({ ...serviceEditData, name: e.target.value })} style={{ width: '100%', padding: '0.3rem' }} /></span>
+                          <span><input type="text" value={serviceEditData.description} onChange={(e) => setServiceEditData({ ...serviceEditData, description: e.target.value })} style={{ width: '100%', padding: '0.3rem' }} /></span>
+                          <span style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button className="btn-add" style={{ padding: '0.3rem 0.6rem', margin: 0 }} onClick={() => { updateService(s.id, serviceEditData); setEditingServiceId(null); }}>Save</button>
+                            <button className="btn-delete" style={{ border: '1px solid var(--border)', color: 'var(--text)' }} onClick={() => setEditingServiceId(null)}>Cancel</button>
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="list-row" key={s.id}>
+                          <span>{i + 1}</span>
+                          <span className="list-name">{s.name}</span>
+                          <span>{s.description || '—'}</span>
+                          <span style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button
+                              className="btn-back"
+                              style={{ padding: '0.3rem 0.6rem', border: '1px solid var(--accent)', color: 'var(--accent)' }}
+                              onClick={() => { setEditingServiceId(s.id); setServiceEditData({ name: s.name, description: s.description || '' }); }}
+                              title="Edit Service"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn-delete"
+                              onClick={() => deleteService(s.id)}
+                              title="Delete Service"
+                            >
+                              <FiTrash2 />
+                            </button>
+                          </span>
+                        </div>
+                      )
+                    ))}
                   </div>
-                  {services.map((s, i) => (
-                    editingServiceId === s.id ? (
-                      <div className="list-row" key={s.id}>
-                        <span>{i + 1}</span>
-                        <span><input type="text" value={serviceEditData.name} onChange={(e) => setServiceEditData({ ...serviceEditData, name: e.target.value })} style={{ width: '100%', padding: '0.3rem' }} /></span>
-                        <span><input type="text" value={serviceEditData.description} onChange={(e) => setServiceEditData({ ...serviceEditData, description: e.target.value })} style={{ width: '100%', padding: '0.3rem' }} /></span>
-                        <span style={{ display: 'flex', gap: '0.4rem' }}>
-                          <button className="btn-add" style={{ padding: '0.3rem 0.6rem', margin: 0 }} onClick={() => { updateService(s.id, serviceEditData); setEditingServiceId(null); }}>Save</button>
-                          <button className="btn-delete" style={{ border: '1px solid var(--border)', color: 'var(--text)' }} onClick={() => setEditingServiceId(null)}>Cancel</button>
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="list-row" key={s.id}>
-                        <span>{i + 1}</span>
-                        <span className="list-name">{s.name}</span>
-                        <span>{s.description || '—'}</span>
-                        <span style={{ display: 'flex', gap: '0.4rem' }}>
-                          <button
-                            className="btn-back"
-                            style={{ padding: '0.3rem 0.6rem', border: '1px solid var(--accent)', color: 'var(--accent)' }}
-                            onClick={() => { setEditingServiceId(s.id); setServiceEditData({ name: s.name, description: s.description || '' }); }}
-                            title="Edit Service"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="btn-delete"
-                            onClick={() => deleteService(s.id)}
-                            title="Delete Service"
-                          >
-                            <FiTrash2 />
-                          </button>
-                        </span>
-                      </div>
-                    )
-                  ))}
                 </div>
               )}
             </div>

@@ -63,8 +63,8 @@ export function DataProvider({ children }) {
     setProjects((prev) => prev.map((p) => p.id === id ? { ...p, ...fields } : p));
   };
 
-  const addEmployee = (name, username, password) => {
-    const emp = { id: uuidv4(), name, username, password };
+  const addEmployee = (name, username, password, designation) => {
+    const emp = { id: uuidv4(), name, username, password, designation };
     setEmployees((prev) => [...prev, emp]);
     return emp;
   };

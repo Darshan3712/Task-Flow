@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
-import { FiLogOut, FiSettings } from 'react-icons/fi';
+import { FiLogOut, FiSettings, FiChevronDown } from 'react-icons/fi';
 import { format } from 'date-fns';
 
 const MONTHS = [
@@ -77,7 +77,7 @@ export default function Header({ onSearch }) {
     <header className="app-header">
       <div className="header-left">
         <div className="header-logo">
-          <img src="./logo.png" alt="TaskFlow Logo" className="app-main-logo" />
+          <img src="./New_Logo.png" alt="TaskFlow Logo" className="app-main-logo" />
         </div>
       </div>
 
@@ -90,7 +90,7 @@ export default function Header({ onSearch }) {
               onClick={() => setIsServicesOpen(!isServicesOpen)}
             >
               <span className="trigger-text">{getServiceText()}</span>
-              <span className="trigger-icon">▼</span>
+              <FiChevronDown className="trigger-icon" />
             </div>
 
             {isServicesOpen && (
@@ -174,7 +174,7 @@ export default function Header({ onSearch }) {
           </button>
         )}
         <div className="user-badge">
-          <span className="user-role">{currentUser?.role === 'admin' ? 'Admin' : 'Employee'}</span>
+          <span className="user-role">{currentUser?.role === 'admin' ? 'Admin' : (currentUser?.designation || 'Employee')}</span>
           <span className="user-name">{currentUser?.name}</span>
         </div>
         <button className="btn-logout" onClick={handleLogout} title="Logout">

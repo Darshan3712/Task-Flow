@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
         (e) => e.username === username && e.password === password
       );
       if (emp) {
-        setCurrentUser({ id: emp.id, name: emp.name, role: 'employee', companyId: emp.companyId });
+        setCurrentUser({ id: emp.id, name: emp.name, role: 'employee', companyId: emp.companyId, designation: emp.designation });
         return { success: true };
       }
       return { success: false, message: 'Invalid employee credentials.' };

@@ -53,8 +53,22 @@ export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], a
   };
 
   const removeTask = (index) => {
+    const taskToDelete = taskList[index];
     const newList = [...taskList];
     newList.splice(index, 1);
+    
+    // If we're in focused mode and deleting the only visible task,
+    // let's save and close immediately to provide a better UX.
+    if (activeTaskId && taskToDelete.id === activeTaskId) {
+      if (newList.length === 0) {
+        deleteTasks(projectId, dateStr);
+      } else {
+        saveTasks(projectId, dateStr, newList);
+      }
+      onClose();
+      return;
+    }
+
     setTaskList(newList);
   };
 
@@ -80,19 +94,21 @@ export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], a
 
   const handleSave = () => {
     const validTasks = taskList.filter(t => t.title.trim());
-    if (validTasks.length === 0) {
-      setMsg('Please enter a title for at least one task.');
-      return;
-    }
     
-    saveTasks(projectId, dateStr, validTasks.map(t => ({
-      ...t,
-      title: t.title.trim(),
-      description: t.description.trim(),
-      updatedAt: new Date().toISOString(),
-    })));
+    if (validTasks.length === 0) {
+      // If the user removed all tasks and clicked save, we treat it as an overall deletion
+      deleteTasks(projectId, dateStr);
+      setMsg('✅ Tasks cleared!');
+    } else {
+      saveTasks(projectId, dateStr, validTasks.map(t => ({
+        ...t,
+        title: t.title.trim(),
+        description: t.description.trim(),
+        updatedAt: new Date().toISOString(),
+      })));
+      setMsg('✅ Tasks saved!');
+    }
 
-    setMsg('✅ Tasks saved!');
     setTimeout(() => onClose(), 800);
   };
 
@@ -130,7 +146,7 @@ export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], a
                   onRemove={() => removeTask(originalIndex)}
                   headerServiceIds={headerServiceIds}
                   isLast={originalIndex === taskList.length - 1}
-                  showRemove={taskList.length > 1}
+                  showRemove={true}
                   isActive={activeTaskId === task.id}
                 />
               );
@@ -146,7 +162,7 @@ export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], a
         {msg && <div className="popup-msg">{msg}</div>}
 
         <div className="popup-footer">
-          {existingTasks.length > 0 && (
+          {existingTasks.length > 0 && !activeTaskId && (
             <button className="btn-delete-task" onClick={handleDeleteAll}>
               <FiTrash2 /> Delete All
             </button>
