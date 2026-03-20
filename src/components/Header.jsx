@@ -79,6 +79,16 @@ export default function Header({ onSearch }) {
         <div className="header-logo">
           <img src="./New_Logo.png" alt="TaskFlow Logo" className="app-main-logo" />
         </div>
+        <div className="mobile-actions">
+          {currentUser?.role === 'admin' && (
+            <button className="btn-mobile-nav" onClick={() => navigate('/admin')} title="Admin Panel">
+              <FiSettings size={18} />
+            </button>
+          )}
+          <button className="btn-mobile-nav" onClick={handleLogout} title="Logout">
+            <FiLogOut size={18} />
+          </button>
+        </div>
       </div>
 
       <div className="header-center">
