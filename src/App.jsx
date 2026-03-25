@@ -35,11 +35,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter basename="/Task-Flow">
-      <DataProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <DataProvider>
           <AppRoutes />
-        </AuthProvider>
-      </DataProvider>
+        </DataProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

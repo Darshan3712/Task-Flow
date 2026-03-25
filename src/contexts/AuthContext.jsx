@@ -1,43 +1,39 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
+import { api } from '../utils/api';
 
 const AuthContext = createContext(null);
 
-export const ADMIN_CREDENTIALS = { username: 'admin', password: 'admin123' };
+function decodeToken(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return { id: payload.id, name: payload.name, role: payload.role, designation: payload.designation };
+  } catch {
+    return null;
+  }
+}
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('taskapp_current_user');
-    return saved ? JSON.parse(saved) : null;
+    const token = localStorage.getItem('taskapp_token');
+    return token ? decodeToken(token) : null;
   });
 
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('taskapp_current_user', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('taskapp_current_user');
-    }
-  }, [currentUser]);
-
-  const login = (username, password, role, employees = []) => {
-    if (role === 'admin') {
-      if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-        setCurrentUser({ id: 'admin', name: 'Admin', role: 'admin', companyId: null });
-        return { success: true };
-      }
-      return { success: false, message: 'Invalid admin credentials.' };
-    } else {
-      const emp = employees.find(
-        (e) => e.username === username && e.password === password
-      );
-      if (emp) {
-        setCurrentUser({ id: emp.id, name: emp.name, role: 'employee', companyId: emp.companyId, designation: emp.designation });
-        return { success: true };
-      }
-      return { success: false, message: 'Invalid employee credentials.' };
+  const login = async (username, password) => {
+    try {
+      const data = await api.login(username, password);
+      localStorage.setItem('taskapp_token', data.token);
+      const user = decodeToken(data.token);
+      setCurrentUser(user);
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.message || 'Invalid credentials.' };
     }
   };
 
-  const logout = () => setCurrentUser(null);
+  const logout = () => {
+    localStorage.removeItem('taskapp_token');
+    setCurrentUser(null);
+  };
 
   return (
     <AuthContext.Provider value={{ currentUser, login, logout }}>

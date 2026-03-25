@@ -1,96 +1,107 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import { api } from '../utils/api';
 
 const DataContext = createContext(null);
 
-function loadFromStorage(key, fallback) {
-  try {
-    const val = localStorage.getItem(key);
-    return val ? JSON.parse(val) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 export function DataProvider({ children }) {
-  const [projects, setProjects] = useState(() => {
-    const savedProjects = loadFromStorage('taskapp_projects', null);
-    if (savedProjects) return savedProjects;
-    // Migration: Check for old 'taskapp_companies' key
-    const oldCompanies = loadFromStorage('taskapp_companies', null);
-    if (oldCompanies) {
-      localStorage.removeItem('taskapp_companies');
-      return oldCompanies;
-    }
-    return [];
-  });
-  const [employees, setEmployees] = useState(() => loadFromStorage('taskapp_employees', []));
-  const [services, setServices] = useState(() => loadFromStorage('taskapp_services', []));
-  const [tasks, setTasks] = useState(() => {
-    const savedTasks = loadFromStorage('taskapp_tasks', {});
-    // Migration: Convert single objects to arrays if needed
-    const migratedTasks = { ...savedTasks };
-    let changed = false;
-    Object.keys(migratedTasks).forEach(key => {
-      if (migratedTasks[key] && !Array.isArray(migratedTasks[key])) {
-        migratedTasks[key] = [migratedTasks[key]];
-        changed = true;
-      }
-    });
-    if (changed) {
-      localStorage.setItem('taskapp_tasks', JSON.stringify(migratedTasks));
-    }
-    return migratedTasks;
-  });
+  const [projects,  setProjects]  = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [services,  setServices]  = useState([]);
+  const [tasks,     setTasks]     = useState({}); // { "projectId_YYYY-MM-DD": [...entries] }
+  const [loading,   setLoading]   = useState(true);
 
-  useEffect(() => { localStorage.setItem('taskapp_projects', JSON.stringify(projects)); }, [projects]);
-  useEffect(() => { localStorage.setItem('taskapp_employees', JSON.stringify(employees)); }, [employees]);
-  useEffect(() => { localStorage.setItem('taskapp_services', JSON.stringify(services)); }, [services]);
-  useEffect(() => { localStorage.setItem('taskapp_tasks', JSON.stringify(tasks)); }, [tasks]);
+  const { currentUser } = useAuth();
 
-  const addProject = (name, serviceIds = []) => {
-    const project = { id: uuidv4(), name, serviceIds };
+  // ── Load all reference data — only when authenticated ─────────────────────
+  const loadAll = useCallback(async () => {
+    if (!currentUser) return; // ← guard: no token, no requests
+    try {
+      setLoading(true);
+      const [p, e, s, tMap] = await Promise.all([
+        api.getProjects(),
+        api.getEmployees(),
+        api.getServices(),
+        api.getAllTasks()
+      ]);
+      setProjects(p);
+      setEmployees(e);
+      setServices(s);
+      setTasks(tMap || {});
+    } catch (err) {
+      console.error('Failed to load data:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser]);
+
+  // Re-run whenever the logged-in user changes (login / logout)
+  useEffect(() => {
+    if (currentUser) {
+      loadAll();
+    } else {
+      // User logged out — clear all data
+      setProjects([]);
+      setEmployees([]);
+      setServices([]);
+      setTasks({});
+      setLoading(false);
+    }
+  }, [currentUser, loadAll]);
+
+  // ── Projects ──────────────────────────────────────────────────────────────
+  const addProject = async (name, serviceIds = []) => {
+    const project = await api.createProject(name, serviceIds);
     setProjects((prev) => [...prev, project]);
     return project;
   };
 
-  const deleteProject = (id) => {
+  const deleteProject = async (id) => {
+    await api.deleteProject(id);
     setProjects((prev) => prev.filter((p) => p.id !== id));
     setEmployees((prev) => prev.filter((e) => e.projectId !== id));
   };
 
-  const updateProject = (id, fields) => {
-    setProjects((prev) => prev.map((p) => p.id === id ? { ...p, ...fields } : p));
+  const updateProject = async (id, fields) => {
+    const updated = await api.updateProject(id, fields);
+    setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, ...updated } : p)));
   };
 
-  const addEmployee = (name, username, password, designation) => {
-    const emp = { id: uuidv4(), name, username, password, designation };
+  // ── Employees ────────────────────────────────────────────────────────────
+  const addEmployee = async (name, username, password, designation) => {
+    const emp = await api.createEmployee({ name, username, password, designation });
     setEmployees((prev) => [...prev, emp]);
     return emp;
   };
 
-  const deleteEmployee = (id) => {
+  const deleteEmployee = async (id) => {
+    await api.deleteEmployee(id);
     setEmployees((prev) => prev.filter((e) => e.id !== id));
   };
 
-  const addService = (name, description) => {
-    const service = { id: uuidv4(), name, description };
+  // ── Services ─────────────────────────────────────────────────────────────
+  const addService = async (name, description) => {
+    const service = await api.createService(name, description);
     setServices((prev) => [...prev, service]);
     return service;
   };
 
-  const deleteService = (id) => {
+  const deleteService = async (id) => {
+    await api.deleteService(id);
     setServices((prev) => prev.filter((s) => s.id !== id));
   };
 
-  const updateService = (id, fields) => {
-    setServices((prev) => prev.map((s) => s.id === id ? { ...s, ...fields } : s));
+  const updateService = async (id, fields) => {
+    const updated = await api.updateService(id, fields);
+    setServices((prev) => prev.map((s) => (s.id === id ? { ...s, ...updated } : s)));
   };
 
-  // taskKey = `${projectId}_${YYYY-MM-DD}`
-  const saveTasks = (projectId, dateStr, taskList) => {
+  // ── Tasks ─────────────────────────────────────────────────────────────────
+  // taskKey = `${projectId}_${YYYY-MM-DD}`  (mirrors old localStorage key format)
+  const saveTasks = async (projectId, dateStr, taskList) => {
     const key = `${projectId}_${dateStr}`;
-    setTasks((prev) => ({ ...prev, [key]: taskList }));
+    const entries = await api.saveTasks(projectId, dateStr, taskList);
+    setTasks((prev) => ({ ...prev, [key]: entries }));
   };
 
   const getTasks = (projectId, dateStr) => {
@@ -98,8 +109,20 @@ export function DataProvider({ children }) {
     return tasks[key] || [];
   };
 
-  const deleteTasks = (projectId, dateStr) => {
+  const loadTasksForProject = async (projectId) => {
+    const taskMap = await api.getAllProjectTasks(projectId);
+    // taskMap: { "YYYY-MM-DD": [...entries] }
+    const newEntries = {};
+    Object.entries(taskMap).forEach(([date, entries]) => {
+      newEntries[`${projectId}_${date}`] = entries;
+    });
+    setTasks((prev) => ({ ...prev, ...newEntries }));
+    return newEntries;
+  };
+
+  const deleteTasks = async (projectId, dateStr) => {
     const key = `${projectId}_${dateStr}`;
+    await api.deleteTasks(projectId, dateStr);
     setTasks((prev) => {
       const next = { ...prev };
       delete next[key];
@@ -109,11 +132,12 @@ export function DataProvider({ children }) {
 
   return (
     <DataContext.Provider value={{
-      projects, employees, services, tasks,
+      projects, employees, services, tasks, loading,
       addProject, deleteProject, updateProject,
       addEmployee, deleteEmployee,
       addService, deleteService, updateService,
-      saveTasks, getTasks, deleteTasks
+      saveTasks, getTasks, deleteTasks, loadTasksForProject,
+      reload: loadAll,
     }}>
       {children}
     </DataContext.Provider>
@@ -123,3 +147,5 @@ export function DataProvider({ children }) {
 export function useData() {
   return useContext(DataContext);
 }
+
+

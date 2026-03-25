@@ -5,7 +5,7 @@ import { FiX, FiSave, FiTrash2 } from 'react-icons/fi';
 import { v4 as uuidv4 } from 'uuid';
 
 const STATUSES = [
-  { value: 'gray',   label: 'In Progress', emoji: '⬜' },
+  { value: 'gray',   label: 'In Progress', emoji: '⚫' },
   { value: 'yellow', label: 'Ready',       emoji: '🟡' },
   { value: 'green',  label: 'Completed',   emoji: '🟢' },
   { value: 'red',    label: 'Not Done',    emoji: '🔴' },
@@ -245,7 +245,7 @@ function TaskEntry({ task, index, employees, services, updateField, onToggleEmp,
 
       <div className="task-entry-content">
         <div className="task-entry-main">
-          <div className="form-group">
+          <div className="form-group fg-title">
             <label className="popup-label">Task Title</label>
             <input
               type="text"
@@ -256,7 +256,7 @@ function TaskEntry({ task, index, employees, services, updateField, onToggleEmp,
             />
           </div>
 
-          <div className="form-group">
+          <div className="form-group fg-desc">
             <label className="popup-label">Description</label>
             <textarea
               className="popup-input popup-textarea"
@@ -267,7 +267,7 @@ function TaskEntry({ task, index, employees, services, updateField, onToggleEmp,
             />
           </div>
 
-          <div className="form-row">
+          <div className="form-row fg-row">
             <div className="form-group">
               <label className="popup-label">Employees</label>
               <div className="multi-select-container" ref={empRef}>
@@ -355,6 +355,7 @@ function TaskEntry({ task, index, employees, services, updateField, onToggleEmp,
                   hidden
                 />
                 <span className="status-emoji">{s.emoji}</span>
+                <span className={`status-dot-mobile color-${s.value}`}></span>
               </label>
             ))}
           </div>

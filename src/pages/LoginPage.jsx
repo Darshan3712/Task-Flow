@@ -1,22 +1,24 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useData } from '../contexts/DataContext';
-import { FiLogIn } from 'react-icons/fi';
+import { FiLogIn, FiLoader } from 'react-icons/fi';
 
 export default function LoginPage() {
   const [role, setRole] = useState('admin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const { employees } = useData();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const result = login(username, password, role, employees);
+    setLoading(true);
+    // The unified backend checks credentials securely based on username
+    const result = await login(username, password);
+    setLoading(false);
     if (result.success) {
       navigate('/dashboard');
     } else {
@@ -34,13 +36,13 @@ export default function LoginPage() {
         <div className="role-tabs">
           <button
             className={`role-tab ${role === 'admin' ? 'active' : ''}`}
-            onClick={() => setRole('admin')}
+            onClick={(e) => { e.preventDefault(); setRole('admin'); }}
           >
             Admin
           </button>
           <button
             className={`role-tab ${role === 'employee' ? 'active' : ''}`}
-            onClick={() => setRole('employee')}
+            onClick={(e) => { e.preventDefault(); setRole('employee'); }}
           >
             Employee
           </button>
@@ -68,13 +70,14 @@ export default function LoginPage() {
             />
           </div>
           {error && <div className="login-error">{error}</div>}
-          <button type="submit" className="btn-login">
-            <FiLogIn size={18} /> Sign In as {role === 'admin' ? 'Admin' : 'Employee'}
+          <button type="submit" className="btn-login" disabled={loading}>
+            {loading ? <FiLoader size={18} className="spin" /> : <FiLogIn size={18} />}
+            {loading ? 'Signing in...' : `Sign In as ${role === 'admin' ? 'Admin' : 'Employee'}`}
           </button>
         </form>
 
         {role === 'admin' && (
-          <p className="login-hint">Demo: admin / admin123</p>
+          <p className="login-hint">Admin default: admin / admin123</p>
         )}
       </div>
     </div>

@@ -269,7 +269,7 @@ export default function AdminPanel() {
                             <div className="multi-select-container" ref={editServicesRef}>
                               <div
                                 className={`dropdown-trigger searchable ${isEditProjectServicesOpen ? 'active' : ''}`}
-                                onClick={() => setIsEditProjectServicesOpen(true)}
+                                onMouseDown={(e) => { e.preventDefault(); setIsEditProjectServicesOpen(v => !v); }}
                                 style={{ padding: '0.1rem 0.5rem', minHeight: '32px' }}
                               >
                                 <input
@@ -283,11 +283,15 @@ export default function AdminPanel() {
                                   }}
                                   onFocus={() => setIsEditProjectServicesOpen(true)}
                                   style={{ fontSize: '0.75rem' }}
+                                  onMouseDown={(e) => e.stopPropagation()}
                                 />
                                 <FiChevronDown className="trigger-icon" style={{ fontSize: '0.7rem' }} />
                               </div>
                               {isEditProjectServicesOpen && (
-                                <div className="dropdown-menu">
+                                <div
+                                  className="dropdown-menu"
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                >
                                   {services
                                     .filter(s => s.name.toLowerCase().includes(editServicesSearchTerm.toLowerCase()))
                                     .map((s) => (
@@ -309,8 +313,8 @@ export default function AdminPanel() {
                             </div>
                           </span>
                           <span style={{ display: 'flex', gap: '0.4rem' }}>
-                            <button className="btn-add" style={{ padding: '0.3rem 0.6rem', margin: 0 }} onClick={() => { if ((editFormData.serviceIds || []).length === 0) return alert('Select at least one service'); updateProject(p.id, editFormData); setEditingProjectId(null); }}>Save</button>
-                            <button className="btn-delete" style={{ border: '1px solid var(--border)', color: 'var(--text)' }} onClick={() => setEditingProjectId(null)}>Cancel</button>
+                            <button className="btn-add" style={{ padding: '0.3rem 0.6rem', margin: 0 }} onClick={() => { if ((editFormData.serviceIds || []).length === 0) return alert('Select at least one service'); updateProject(p.id, editFormData); setEditingProjectId(null); setIsEditProjectServicesOpen(false); }}>Save</button>
+                            <button className="btn-delete" style={{ border: '1px solid var(--border)', color: 'var(--text)' }} onClick={() => { setEditingProjectId(null); setIsEditProjectServicesOpen(false); setEditServicesSearchTerm(''); }}>Cancel</button>
                           </span>
                         </div>
                       ) : (
@@ -488,7 +492,7 @@ export default function AdminPanel() {
                 <p className="empty-msg">No services added yet.</p>
               ) : (
                 <div className="admin-table-overflow-container">
-                  <div className="list-table">
+                  <div className="list-table service-list-table">
                     <div className="list-header">
                       <span>#</span>
                       <span>Service Name</span>

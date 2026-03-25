@@ -45,11 +45,13 @@ export default function Header({ onSearch }) {
 
   const handleGo = () => {
     if (!selectedProjectId) return;
+    const isMasterView = selectedProjectId === '__master__';
     onSearch({
-      projectId: selectedProjectId,
+      projectId: isMasterView ? null : selectedProjectId,
       month: selectedMonth,
       year: selectedYear,
-      serviceIds: selectedServiceIds
+      serviceIds: selectedServiceIds,
+      isMasterView,
     });
   };
 
@@ -136,6 +138,7 @@ export default function Header({ onSearch }) {
             onChange={(e) => setSelectedProjectId(e.target.value)}
           >
             <option value="">-- Select Project --</option>
+            <option value="__master__">★ Master View (All Projects)</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
