@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { FiArrowLeft, FiPlus, FiTrash2, FiBriefcase, FiUsers, FiLayers, FiEdit2, FiChevronDown } from 'react-icons/fi';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('projects');
@@ -12,6 +13,8 @@ export default function AdminPanel() {
     addService, deleteService, updateService } = useData();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   // Project form state
   const [projectName, setProjectName] = useState('');
@@ -342,7 +345,7 @@ export default function AdminPanel() {
                             </button>
                             <button
                               className="btn-delete"
-                              onClick={() => deleteProject(p.id)}
+                              onClick={() => setDeleteTarget({ type: 'project', id: p.id, name: `project "${p.name}"` })}
                               title="Delete Project"
                             >
                               <FiTrash2 />
@@ -438,7 +441,7 @@ export default function AdminPanel() {
                         <span>
                           <button
                             className="btn-delete"
-                            onClick={() => deleteEmployee(emp.id)}
+                            onClick={() => setDeleteTarget({ type: 'employee', id: emp.id, name: `employee "${emp.name}"` })}
                             title="Delete Employee"
                           >
                             <FiTrash2 />
@@ -526,7 +529,7 @@ export default function AdminPanel() {
                             </button>
                             <button
                               className="btn-delete"
-                              onClick={() => deleteService(s.id)}
+                              onClick={() => setDeleteTarget({ type: 'service', id: s.id, name: `service "${s.name}"` })}
                               title="Delete Service"
                             >
                               <FiTrash2 />
@@ -542,6 +545,17 @@ export default function AdminPanel() {
           </div>
         )}
       </div>
+
+      <ConfirmDeleteModal 
+        isOpen={!!deleteTarget} 
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (deleteTarget.type === 'project') deleteProject(deleteTarget.id);
+          else if (deleteTarget.type === 'employee') deleteEmployee(deleteTarget.id);
+          else if (deleteTarget.type === 'service') deleteService(deleteTarget.id);
+        }}
+        itemName={deleteTarget?.name}
+      />
     </div>
   );
 }

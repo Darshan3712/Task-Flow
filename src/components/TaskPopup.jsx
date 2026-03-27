@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useData } from '../contexts/DataContext';
-import { useAuth } from '../contexts/AuthContext';
+
 import { FiX, FiSave, FiTrash2 } from 'react-icons/fi';
 import { v4 as uuidv4 } from 'uuid';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
 
 const STATUSES = [
   { value: 'gray',   label: 'In Progress', emoji: '⚫' },
@@ -18,7 +19,7 @@ const MONTHS_FULL = [
 
 export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], activeTaskId = null, onClose }) {
   const { projects, employees, services, saveTasks, getTasks, deleteTasks } = useData();
-  const { currentUser } = useAuth();
+
 
   const existingTasks = getTasks(projectId, dateStr);
 
@@ -35,6 +36,7 @@ export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], a
   });
 
   const [msg, setMsg] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const project = projects.find((p) => p.id === projectId);
 
   // Format date nicely
@@ -113,11 +115,21 @@ export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], a
   };
 
   const handleDeleteAll = () => {
-    deleteTasks(projectId, dateStr);
-    onClose();
+    setDeleteTarget({ type: 'all', name: `all tasks for this date` });
+  };
+
+  const confirmDelete = () => {
+    if (deleteTarget?.type === 'single') {
+      removeTask(deleteTarget.index);
+    } else if (deleteTarget?.type === 'all') {
+      deleteTasks(projectId, dateStr);
+      onClose();
+    }
+    setDeleteTarget(null);
   };
 
   return (
+    <>
     <div className="popup-overlay" onClick={onClose}>
       <div className="popup-card multi-task-card" onClick={(e) => e.stopPropagation()}>
         <div className="popup-header">
@@ -143,7 +155,7 @@ export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], a
                   updateField={(f, v) => updateTaskField(originalIndex, f, v)}
                   onToggleEmp={(id) => toggleEmployee(originalIndex, id)}
                   onToggleSrv={(id) => toggleService(originalIndex, id)}
-                  onRemove={() => removeTask(originalIndex)}
+                  onRemove={() => setDeleteTarget({ type: 'single', index: originalIndex, name: `Task ${originalIndex + 1}` })}
                   headerServiceIds={headerServiceIds}
                   isLast={originalIndex === taskList.length - 1}
                   showRemove={true}
@@ -173,6 +185,14 @@ export default function TaskPopup({ projectId, dateStr, headerServiceIds = [], a
         </div>
       </div>
     </div>
+
+    <ConfirmDeleteModal 
+      isOpen={!!deleteTarget}
+      onClose={() => setDeleteTarget(null)}
+      onConfirm={confirmDelete}
+      itemName={deleteTarget?.name}
+    />
+    </>
   );
 }
 

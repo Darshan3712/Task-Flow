@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { FiLogOut, FiSettings, FiChevronDown } from 'react-icons/fi';
-import { format } from 'date-fns';
+
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -19,24 +19,7 @@ export default function Header({ onSearch }) {
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-  const [selectedServiceIds, setSelectedServiceIds] = useState([]);
-  const [isServicesOpen, setIsServicesOpen] = useState(false);
-
-  const servicesRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (servicesRef.current && !servicesRef.current.contains(event.target)) {
-        setIsServicesOpen(false);
-      }
-    }
-    if (isServicesOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isServicesOpen]);
+  const [selectedServiceId, setSelectedServiceId] = useState('');
 
   const handleLogout = () => {
     logout();
@@ -50,24 +33,9 @@ export default function Header({ onSearch }) {
       projectId: isMasterView ? null : selectedProjectId,
       month: selectedMonth,
       year: selectedYear,
-      serviceIds: selectedServiceIds,
+      serviceIds: selectedServiceId ? [selectedServiceId] : [],
       isMasterView,
     });
-  };
-
-  const toggleService = (id) => {
-    setSelectedServiceIds((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
-    );
-  };
-
-  const getServiceText = () => {
-    if (selectedServiceIds.length === 0) return 'All Services';
-    if (selectedServiceIds.length === 1) {
-      const s = services.find(srv => srv.id === selectedServiceIds[0]);
-      return s ? s.name : '1 Service';
-    }
-    return `${selectedServiceIds.length} Services`;
   };
 
   const years = [];
@@ -96,38 +64,16 @@ export default function Header({ onSearch }) {
       <div className="header-center">
         <div className="header-control">
           <label className="header-label">Services</label>
-          <div className="multi-select-container header-services-ms" ref={servicesRef}>
-            <div
-              className={`dropdown-trigger header-trigger ${isServicesOpen ? 'active' : ''}`}
-              onClick={() => setIsServicesOpen(!isServicesOpen)}
-            >
-              <span className="trigger-text">{getServiceText()}</span>
-              <FiChevronDown className="trigger-icon" />
-            </div>
-
-            {isServicesOpen && (
-              <div className="dropdown-menu header-dropdown-menu">
-                {services.length === 0 ? (
-                  <div className="no-emp-hint">No services added yet.</div>
-                ) : (
-                  services.map((s) => (
-                    <label
-                      key={s.id}
-                      className={`emp-checkbox-item ${selectedServiceIds.includes(s.id) ? 'checked' : ''}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedServiceIds.includes(s.id)}
-                        onChange={() => toggleService(s.id)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <span className="emp-check-name">{s.name}</span>
-                    </label>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
+          <select
+            className="header-select"
+            value={selectedServiceId}
+            onChange={(e) => setSelectedServiceId(e.target.value)}
+          >
+            <option value="">-- All Services --</option>
+            {services.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
         </div>
 
         <div className="header-control">

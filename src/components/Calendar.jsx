@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import TaskPopup from './TaskPopup';
-import { startOfMonth, getDay, getDaysInMonth } from 'date-fns';
+import { getDay, getDaysInMonth } from 'date-fns';
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -42,13 +42,6 @@ function getOverallStatus(tasks) {
   return 'green';
 }
 
-function getWorstStatus(statuses) {
-  if (!statuses || statuses.length === 0) return null;
-  if (statuses.includes('red')) return 'red';
-  if (statuses.includes('yellow')) return 'yellow';
-  if (statuses.includes('gray')) return 'gray';
-  return 'green';
-}
 
 // ─── MASTER VIEW CALENDAR ─────────────────────────────────────────────────────
 
@@ -205,7 +198,7 @@ function MasterDaySummary({ dateStr, serviceIds, onClose }) {
             <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
               No tasks scheduled for any project on this day.
             </p>
-          ) : entries.map(({ task, projectName }, i) => (
+          ) : entries.map(({ task }, i) => (
             <div key={task.id || i} className={`master-popup-row master-popup-${task.status}`}>
               <span
                 className="master-popup-dot"
