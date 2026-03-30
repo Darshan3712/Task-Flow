@@ -315,9 +315,9 @@ export default function AdminPanel() {
                               )}
                             </div>
                           </span>
-                          <span style={{ display: 'flex', gap: '0.4rem' }}>
-                            <button className="btn-add" style={{ padding: '0.3rem 0.6rem', margin: 0 }} onClick={() => { if ((editFormData.serviceIds || []).length === 0) return alert('Select at least one service'); updateProject(p.id, editFormData); setEditingProjectId(null); setIsEditProjectServicesOpen(false); }}>Save</button>
-                            <button className="btn-delete" style={{ border: '1px solid var(--border)', color: 'var(--text)' }} onClick={() => { setEditingProjectId(null); setIsEditProjectServicesOpen(false); setEditServicesSearchTerm(''); }}>Cancel</button>
+                          <span style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                            <button className="btn-add" style={{ padding: '0.35rem 0.75rem', margin: 0 }} onClick={() => { if ((editFormData.serviceIds || []).length === 0) return alert('Select at least one service'); updateProject(p.id, editFormData); setEditingProjectId(null); setIsEditProjectServicesOpen(false); }}>Save</button>
+                            <button className="btn-delete" style={{ border: '1.5px solid var(--border)', color: 'var(--text-muted)', background: 'transparent' }} onClick={() => { setEditingProjectId(null); setIsEditProjectServicesOpen(false); setEditServicesSearchTerm(''); }}>Cancel</button>
                           </span>
                         </div>
                       ) : (
@@ -334,21 +334,20 @@ export default function AdminPanel() {
                               </div>
                             ) : '—'}
                           </span>
-                          <span style={{ display: 'flex', gap: '0.4rem' }}>
+                          <span style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                             <button
-                              className="btn-back"
-                              style={{ padding: '0.3rem 0.5rem', border: '1px solid var(--accent)', color: 'var(--accent)' }}
+                              className="btn-action-edit"
                               onClick={() => { setEditingProjectId(p.id); setEditFormData({ name: p.name, serviceIds: p.serviceIds || [] }); }}
                               title="Edit Project"
                             >
-                              Edit
+                              <FiEdit2 size={14} /> Edit
                             </button>
                             <button
                               className="btn-delete"
                               onClick={() => setDeleteTarget({ type: 'project', id: p.id, name: `project "${p.name}"` })}
                               title="Delete Project"
                             >
-                              <FiTrash2 />
+                              <FiTrash2 size={15} />
                             </button>
                           </span>
                         </div>
@@ -444,7 +443,7 @@ export default function AdminPanel() {
                             onClick={() => setDeleteTarget({ type: 'employee', id: emp.id, name: `employee "${emp.name}"` })}
                             title="Delete Employee"
                           >
-                            <FiTrash2 />
+                            <FiTrash2 size={15} />
                           </button>
                         </span>
                       </div>
@@ -518,21 +517,20 @@ export default function AdminPanel() {
                           <span>{i + 1}</span>
                           <span className="list-name">{s.name}</span>
                           <span>{s.description || '—'}</span>
-                          <span style={{ display: 'flex', gap: '0.4rem' }}>
+                          <span style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                             <button
-                              className="btn-back"
-                              style={{ padding: '0.3rem 0.6rem', border: '1px solid var(--accent)', color: 'var(--accent)' }}
+                              className="btn-action-edit"
                               onClick={() => { setEditingServiceId(s.id); setServiceEditData({ name: s.name, description: s.description || '' }); }}
                               title="Edit Service"
                             >
-                              Edit
+                              <FiEdit2 size={14} /> Edit
                             </button>
                             <button
                               className="btn-delete"
                               onClick={() => setDeleteTarget({ type: 'service', id: s.id, name: `service "${s.name}"` })}
                               title="Delete Service"
                             >
-                              <FiTrash2 />
+                              <FiTrash2 size={15} />
                             </button>
                           </span>
                         </div>

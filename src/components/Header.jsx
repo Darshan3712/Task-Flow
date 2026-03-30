@@ -62,68 +62,72 @@ export default function Header({ onSearch }) {
       </div>
 
       <div className="header-center">
-        <div className="header-control">
-          <label className="header-label">Services</label>
-          <select
-            className="header-select"
-            value={selectedServiceId}
-            onChange={(e) => setSelectedServiceId(e.target.value)}
-          >
-            <option value="">-- All Services --</option>
-            {services.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
+        <div className="header-row-1">
+          <div className="header-control">
+            <label className="header-label">Services</label>
+            <select
+              className="header-select"
+              value={selectedServiceId}
+              onChange={(e) => setSelectedServiceId(e.target.value)}
+            >
+              <option value="">-- All Services --</option>
+              {services.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="header-control">
+            <label className="header-label">Project</label>
+            <select
+              className="header-select"
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+            >
+              <option value="">-- Select Project --</option>
+              <option value="__master__">★ Master View (All Projects)</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="header-control">
-          <label className="header-label">Project</label>
-          <select
-            className="header-select"
-            value={selectedProjectId}
-            onChange={(e) => setSelectedProjectId(e.target.value)}
-          >
-            <option value="">-- Select Project --</option>
-            <option value="__master__">★ Master View (All Projects)</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </div>
+        <div className="header-row-2">
+          <div className="header-control">
+            <label className="header-label">Month</label>
+            <select
+              className="header-select"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+            >
+              {MONTHS.map((m, i) => (
+                <option key={i} value={i}>{m}</option>
+              ))}
+            </select>
+          </div>
 
-        <div className="header-control">
-          <label className="header-label">Month</label>
-          <select
-            className="header-select"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(Number(e.target.value))}
-          >
-            {MONTHS.map((m, i) => (
-              <option key={i} value={i}>{m}</option>
-            ))}
-          </select>
-        </div>
+          <div className="header-control">
+            <label className="header-label">Year</label>
+            <select
+              className="header-select"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
 
-        <div className="header-control">
-          <label className="header-label">Year</label>
-          <select
-            className="header-select"
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(Number(e.target.value))}
+          <button
+            className={`btn-go ${!selectedProjectId ? 'disabled' : ''}`}
+            onClick={handleGo}
+            disabled={!selectedProjectId}
           >
-            {years.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+            Go
+          </button>
         </div>
-
-        <button
-          className={`btn-go ${!selectedProjectId ? 'disabled' : ''}`}
-          onClick={handleGo}
-          disabled={!selectedProjectId}
-        >
-          Go
-        </button>
       </div>
 
       <div className="header-right">

@@ -4,7 +4,7 @@ const taskEntrySchema = new mongoose.Schema({
   id:          { type: String, required: true },
   title:       { type: String, default: '' },
   description: { type: String, default: '' },
-  status:      { type: String, enum: ['in-progress', 'ready', 'completed', 'not-done'], default: 'in-progress' },
+  status:      { type: String, enum: ['gray', 'yellow', 'green', 'red'], default: 'gray' },
   employeeIds: [String],
   serviceIds:  [String],
 }, { _id: false });
