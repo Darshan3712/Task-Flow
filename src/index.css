@@ -20,7 +20,8 @@
   --text-dim: rgba(19, 10, 33, 0.45);
 
   /* Status colors */
-  --gray: #4b5563; /* Darker gray for better visibility */
+  --gray: #4b5563;
+  /* Darker gray for better visibility */
   --yellow: #F59E0B;
   --green: #10B981;
   --red: #EF4444;
@@ -165,7 +166,9 @@ label {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .spin {
@@ -1547,7 +1550,8 @@ label {
 .project-list-table .list-header,
 .project-list-table .list-row {
   grid-template-columns: 40px 1fr 2fr 120px;
-  min-width: 480px; /* reduced so less scroll needed on mobile */
+  min-width: 480px;
+  /* reduced so less scroll needed on mobile */
 }
 
 .service-list-table .list-header,

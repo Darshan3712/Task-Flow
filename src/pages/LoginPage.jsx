@@ -55,7 +55,7 @@ export default function LoginPage() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder={role === 'admin' ? 'admin' : 'Enter username'}
+              placeholder={role === 'admin' ? 'Enter admin username' : 'Enter username'}
               required
             />
           </div>
@@ -75,10 +75,6 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : `Sign In as ${role === 'admin' ? 'Admin' : 'Employee'}`}
           </button>
         </form>
-
-        {role === 'admin' && (
-          <p className="login-hint">Admin default: admin / admin123</p>
-        )}
       </div>
     </div>
   );
